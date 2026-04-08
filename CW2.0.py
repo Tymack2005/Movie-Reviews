@@ -3,22 +3,40 @@ import nltk
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 from wordcloud import WordCloud
-
+import string
 nltk.download('stopwords')
+from sklearn.feature_extraction.text import TfidfVectorizer
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+from nltk.stem import WordNetLemmatizer
+
 
 # Load data
 data = pd.read_csv(r"C:/Users/fitz_/OneDrive - Edge Hill University/python/data analytics/movie_reviews.csv")
 data.dropna(inplace=True)
 
+TfidfVectorizer(max_features=5000, ngram_range=(1,2))
+max_features=5000 or 7000
 stop_words = set(stopwords.words('english'))
 
-# Clean reviews
-def clean_reviews(review):
-    return ' '.join(
-        word for word in review.split()
-        if word.lower() not in stop_words
-    )
+from nltk.stem import PorterStemmer
+ps = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
 
+
+def clean_reviews(text):
+    text = text.lower()
+    text = "".join(char for char in text if char not in string.punctuation)
+    text = " ".join(ps.stem(word) for word in text.split() if word not in stop_words)
+    
+    # lemmatize + remove stopwords
+    text = " ".join(
+        lemmatizer.lemmatize(word)
+        for word in text.split()
+        if word not in stop_words
+    )
+    
+    return text
 data['text'] = data['text'].apply(clean_reviews)
 
 # Negative word cloud (Red)
@@ -63,3 +81,34 @@ reviews = cv.fit_transform(data['text']).toarray()
 data['sentiment'] = data['sentiment'].map({'pos': 1, 'neg': 0})
 
 print(data['sentiment'].value_counts())
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.svm import LinearSVC
+from sklearn.metrics import accuracy_score
+
+X = data['text']
+y = data['sentiment']
+
+tfidf = TfidfVectorizer(max_features=5000, ngram_range=(1,2))
+X = tfidf.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = {
+    "Linear SVM": LinearSVC() }
+
+for name, model in model.items():
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    print(name, "Accuracy:", accuracy_score(y_test, preds))
+    
+    
+ 
+
+
+
+
+
