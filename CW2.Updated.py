@@ -126,3 +126,17 @@ for name, model in model.items():
     model.fit(X_train, y_train)
     preds = model.predict(X_test)
     print(name, "Accuracy:", accuracy_score(y_test, preds))
+
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+#Naives Bayes Model
+
+nb = MultinomialNB()
+nb.fit(X_train, y_train)
+
+nb_preds = nb.predict(X_test)
+
+print("Naive Bayes Accuracy:", accuracy_score(y_test, nb_preds))
+print("Classifcation Report: ", classification_report(y_test, nb_preds))
+print("Confusion Matrix: ", confusion_matrix(y_test, nb_preds))
